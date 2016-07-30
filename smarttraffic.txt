@@ -1,0 +1,273 @@
+/***************Variables for traffic LEDs*****************/
+int r1 = 2;        //For Red light in lane1
+int y1 = 3;        //For Yellow light in lane1
+int g1 = 4;        //For Green light in lane1         
+int r2 = 5;        //For Red light in lane2  
+int y2 = 6;        //For Yellow light in lane2
+int g2 = 7;        //For Green light in lane2  
+int r3 = 8;        //For Red light in lane3
+int y3 = 9;        //For Yellow light in lane3
+int g3 = 10;       //For Green light in lane3
+int r4 = 11;         //For Red light in lane4           
+int y4 = 12;       //For Yellow light in lane4
+int g4 = 13;        //For Green light in lane4
+/***********************************************************/
+
+/*******************Variables for sensor reading Pins*******************/
+int senRead = 0;                   //Readings from sensor to analog pin 0
+int senRead2 = 1;                  //Readings from sensor to analog pin 1
+int senRead3 = 2;                  //Readings from sensor to analog pin 2
+int senRead4 = 3;                  //Readings from sensor to analog pin 3
+/************************************************************************/
+
+/*************************Other Variables********************************/
+int limit = 850;                   //Threshold range of an obstacle
+int pre = 4;                       //Previous sensor number
+int now = 1;                       //Sensor working right now
+int timer = 0;
+/************************************************************************/
+
+
+void setup()
+{
+ 
+  /**************PIN MODES********************/
+  pinMode (r1, OUTPUT);
+  pinMode (g1, OUTPUT);
+  pinMode (y1, OUTPUT);
+  pinMode (r2, OUTPUT);
+  pinMode (g2, OUTPUT);
+  pinMode (y2, OUTPUT);
+  pinMode (r3, OUTPUT);
+  pinMode (g3, OUTPUT);
+  pinMode (y3, OUTPUT);
+  pinMode (r4, OUTPUT);
+  pinMode (g4, OUTPUT);
+  pinMode (y4, OUTPUT);
+  /**********************************************/
+  
+  Serial.begin(9600);          //setting serial monitor at a default baund rate of 9600
+
+}
+
+void loop()
+{
+
+/******************************Reading Sensors*************************************/
+  int val = analogRead(senRead);    //variable to store values from the photodiode
+  Serial.println(val);              // prints the values from the sensor in serial monitor
+  int val2 = analogRead(senRead2);  //variable to store values from the photodiode
+  Serial.println(val2);             // prints the values from the sensor in serial monitor
+  int val3 = analogRead(senRead3);  //variable to store values from the photodiode
+  Serial.println(val3);             // prints the values from the sensor in serial monitor
+  int val4 = analogRead(senRead4);  //variable to store values from the photodiode
+  Serial.println(val4);             // prints the values from the sensor in serial monitor
+/**************************************************************************************/
+
+
+/********************************Signal Normal Working**********************************/
+
+//    Condition for first signal
+    if(pre == 4)
+    {
+      now = 1;
+      digitalWrite(g1,HIGH);
+      digitalWrite(r2,HIGH);
+      digitalWrite(r3,HIGH);
+      digitalWrite(r4,HIGH);
+      delay(2500);
+        digitalWrite(g1,LOW);
+        digitalWrite(y1,HIGH);
+        delay(500);
+        digitalWrite(y1,LOW);
+        digitalWrite(r2,LOW);
+      pre = 1;
+    }
+   
+//    Condition for second signal
+    else if(pre == 1)
+    {
+      now = 2;
+      digitalWrite(g2,HIGH);
+      digitalWrite(r1,HIGH);
+      digitalWrite(r3,HIGH);
+      digitalWrite(r4,HIGH);
+      delay(2500);
+        digitalWrite(g2,LOW);
+        digitalWrite(y2,HIGH);
+        delay(500);
+        digitalWrite(y2,LOW);
+        digitalWrite(r3,LOW);
+      pre = 2;
+    }
+
+//    Condition for third signal
+    else if(pre == 2)
+    {
+      now = 3;
+      digitalWrite(g3,HIGH);
+      digitalWrite(r1,HIGH);
+      digitalWrite(r2,HIGH);
+      digitalWrite(r4,HIGH);
+      delay(2500);
+        digitalWrite(g3,LOW);
+        digitalWrite(y3,HIGH);
+        delay(500);
+        digitalWrite(y3,LOW);
+        digitalWrite(r4,LOW);
+      pre = 3;
+    }
+
+//  Condition for fourth signal
+    else if(pre == 3)
+    {
+      now = 4;
+      digitalWrite(g4,HIGH);
+      digitalWrite(r1,HIGH);
+      digitalWrite(r3,HIGH);
+      digitalWrite(r2,HIGH);
+      delay(2500);
+        digitalWrite(g4,LOW);
+        digitalWrite(y4,HIGH);
+        delay(500);
+        digitalWrite(y4,LOW);
+        digitalWrite(r1,LOW);
+      pre = 4;
+    }    
+/**********************************************************************/
+
+
+/*****************Interrupt Based Signal Scheduling*******************/
+    // interrupt in signal 1
+    if(val <= limit)
+    {
+        if(now == 1)
+        {
+          delay(500);  
+        }
+        else if(now == 2)
+        {
+          digitalWrite(g2,LOW);
+          digitalWrite(y2,LOW);
+          digitalWrite(r2,HIGH);
+          digitalWrite(g1,HIGH);
+          pre = 4;  
+        }
+        else if(now == 3)
+        {
+          digitalWrite(g3,LOW);
+          digitalWrite(y3,LOW);
+          digitalWrite(r3,HIGH);
+          digitalWrite(g1,HIGH);  
+          pre = 4;
+        }
+        else if(now == 4)
+        {
+          digitalWrite(g4,LOW);
+          digitalWrite(y4,LOW);
+          digitalWrite(r4,HIGH);
+          digitalWrite(g1,HIGH);  
+          pre = 4;
+        }
+    }
+
+    // interrupt in signal 2
+    if(val2 <= limit)
+    {
+        if(now == 1)
+        {
+          digitalWrite(g1,LOW);
+          digitalWrite(y1,LOW);
+          digitalWrite(r1,HIGH);
+          digitalWrite(g2,HIGH);
+          pre = 1;
+        }
+        else if(now == 2)
+        {
+          delay(500);  
+        }
+        else if(now == 3)
+        {
+          digitalWrite(g3,LOW);
+          digitalWrite(y3,LOW);
+          digitalWrite(r3,HIGH);
+          digitalWrite(g2,HIGH);  
+          pre = 1;
+        }
+        else if(now == 4)
+        {
+          digitalWrite(g4,LOW);
+          digitalWrite(y4,LOW);
+          digitalWrite(r4,HIGH);
+          digitalWrite(g2,HIGH);  
+          pre = 1;
+        }
+    }
+
+    // interrupt in signal 3
+    if(val3 <= limit)
+    {
+        if(now == 1)
+        {
+          digitalWrite(g1,LOW);
+          digitalWrite(y1,LOW);
+          digitalWrite(r1,HIGH);
+          digitalWrite(g3,HIGH);
+          pre = 2;
+        }
+        else if(now == 2)
+        {
+          digitalWrite(g2,LOW);
+          digitalWrite(y2,LOW);
+          digitalWrite(r3,HIGH);
+          digitalWrite(g3,HIGH);  
+          pre = 2;
+        }
+        else if(now == 3)
+        {
+          delay(500);  
+        }
+        else if(now == 4)
+        {
+          digitalWrite(g4,LOW);
+          digitalWrite(y4,LOW);
+          digitalWrite(r4,HIGH);
+          digitalWrite(g3,HIGH);  
+          pre = 2;
+        }
+    }
+    
+    // interrupt in signal 4
+    if(val3 <= limit)
+    {
+        if(now == 1)
+        {
+          digitalWrite(g1,LOW);
+          digitalWrite(y1,LOW);
+          digitalWrite(r1,HIGH);
+          digitalWrite(g4,HIGH);
+          pre = 3;
+        }
+        else if(now == 2)
+        {
+          digitalWrite(g2,LOW);
+          digitalWrite(y2,LOW);
+          digitalWrite(r3,HIGH);
+          digitalWrite(g4,HIGH);  
+          pre = 3;
+        }
+        else if(now == 3)
+        {
+          digitalWrite(g4,LOW);
+          digitalWrite(y4,LOW);
+          digitalWrite(r4,HIGH);
+          digitalWrite(g4,HIGH);
+          pre = 3;
+        }
+        else if(now == 4)
+        {
+          delay(500);          
+        }
+    }
+/**********************************************************/
+}
